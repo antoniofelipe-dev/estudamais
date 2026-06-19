@@ -9,5 +9,5 @@
 // autorizam. A chave do Gemini NÃO fica aqui (fica no servidor).
 // ============================================================
 
-const SUPABASE_URL = "https://fmmimunlfxjrvyjmygwz.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://fmmimunlfxjrvyjmygwz.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtbWltdW5sZnhqcnZ5am15Z3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4ODI2OTMsImV4cCI6MjA5NzQ1ODY5M30.3nXj4KbbPfSLHdBQQOa0cxOSz8Dtvv0af7RwW5-5pHs";
