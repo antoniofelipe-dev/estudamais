@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EstudaMais — aprenda jogando</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#0d1117;
+    --bg2:#161b22;
+    --card:#1c2230;
+    --ink:#eef2f7;
+    --muted:#8b97a8;
+    --line:#2a3242;
+    --brand:#7c5cff;       /* roxo elétrico - identidade */
+    --brand2:#00d9a3;      /* verde menta - acerto/sucesso */
+    --gold:#ffb74d;        /* nivel/xp */
+    --bad:#ff6b6b;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;line-height:1.5;min-height:100vh}
+  button{font-family:inherit;cursor:pointer}
+  .hidden{display:none !important}
+
+  /* ---------- TOPO ---------- */
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line);background:var(--bg2);position:sticky;top:0;z-index:10}
+  .logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+  .logo .spark{color:var(--brand)}
+  .user-chip{display:flex;align-items:center;gap:12px;font-size:14px}
+  .user-chip .lvl{background:linear-gradient(135deg,var(--brand),#a78bff);color:#fff;font-weight:700;font-size:12px;padding:4px 10px;border-radius:20px}
+  .user-chip .xp{color:var(--gold);font-weight:600;font-variant-numeric:tabular-nums}
+  .btn-sair{background:none;border:1px solid var(--line);color:var(--muted);padding:7px 12px;border-radius:9px;font-size:13px}
+  .btn-sair:hover{color:var(--ink);border-color:var(--muted)}
+
+  .wrap{max-width:720px;margin:0 auto;padding:28px 22px 70px}
+
+  /* ---------- LOGIN ---------- */
+  .auth-hero{text-align:center;padding:48px 0 30px}
+  .auth-hero h1{font-family:'Space Grotesk',sans-serif;font-size:42px;font-weight:700;letter-spacing:-.03em;line-height:1.05}
+  .auth-hero h1 .g{background:linear-gradient(120deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .auth-hero p{color:var(--muted);font-size:16px;margin-top:14px;max-width:42ch;margin-inline:auto}
+  .auth-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px;max-width:400px;margin:10px auto 0}
+  .auth-tabs{display:flex;gap:6px;background:var(--bg);border-radius:11px;padding:5px;margin-bottom:20px}
+  .auth-tabs button{flex:1;background:none;border:none;color:var(--muted);padding:9px;border-radius:8px;font-weight:600;font-size:14px}
+  .auth-tabs button.on{background:var(--brand);color:#fff}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .field input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:12px 14px;border-radius:10px;font-size:15px;font-family:inherit}
+  .field input:focus{outline:none;border-color:var(--brand)}
+  .btn-primary{width:100%;background:linear-gradient(135deg,var(--brand),#9b7dff);color:#fff;border:none;padding:14px;border-radius:11px;font-weight:700;font-size:15px;transition:transform .08s ease,opacity .2s}
+  .btn-primary:hover{transform:translateY(-1px)}
+  .btn-primary:disabled{opacity:.5;cursor:wait}
+  .auth-msg{font-size:13px;margin-top:12px;text-align:center;min-height:18px}
+  .auth-msg.err{color:var(--bad)}
+  .auth-msg.ok{color:var(--brand2)}
+
+  /* ---------- NAV INFERIOR (app) ---------- */
+  nav.tabs{display:flex;gap:8px;margin-bottom:24px;background:var(--bg2);border:1px solid var(--line);border-radius:13px;padding:6px}
+  nav.tabs button{flex:1;background:none;border:none;color:var(--muted);padding:11px;border-radius:9px;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:7px}
+  nav.tabs button.on{background:var(--brand);color:#fff}
+
+  /* ---------- CARD GENÉRICO ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+  .card + .card{margin-top:18px}
+  h2.sec{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:600;margin-bottom:4px}
+  .sec-sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+
+  /* ---------- PROGRESSO / NÍVEL ---------- */
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+  .stat{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .stat .v{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700}
+  .stat .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+  .stat.xp .v{color:var(--gold)}
+  .stat.lvl .v{color:var(--brand)}
+  .stat.acc .v{color:var(--brand2)}
+  .lvl-bar-wrap{margin-top:6px}
+  .lvl-bar-top{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .lvl-bar{height:12px;background:var(--bg);border-radius:7px;overflow:hidden}
+  .lvl-bar-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:7px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+  /* ---------- INICIAR QUIZ ---------- */
+  .tema-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .tema-row input{flex:1;min-width:180px;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:13px 15px;border-radius:11px;font-size:15px;font-family:inherit}
+  .tema-row input:focus{outline:none;border-color:var(--brand)}
+  .sugestoes{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{background:var(--bg);border:1px solid var(--line);color:var(--muted);padding:8px 13px;border-radius:20px;font-size:13px}
+  .chip:hover{border-color:var(--brand);color:var(--ink)}
+
+  /* ---------- QUIZ ---------- */
+  .q-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px;color:var(--muted)}
+  .q-prog{height:6px;background:var(--bg);border-radius:4px;overflow:hidden;margin-bottom:22px}
+  .q-prog-fill{height:100%;background:var(--brand);transition:width .4s ease}
+  .q-text{font-size:20px;font-weight:600;font-family:'Space Grotesk',sans-serif;margin-bottom:20px;line-height:1.35}
+  .opcoes{display:flex;flex-direction:column;gap:11px}
+  .opcao{text-align:left;background:var(--bg);border:1.5px solid var(--line);color:var(--ink);padding:15px 17px;border-radius:12px;font-size:15px;transition:border-color .15s,background .15s;display:flex;align-items:center;gap:12px}
+  .opcao:hover:not(:disabled){border-color:var(--brand)}
+  .opcao .letra{width:26px;height:26px;border-radius:7px;background:var(--card);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;border:1px solid var(--line)}
+  .opcao.certa{border-color:var(--brand2);background:rgba(0,217,163,.1)}
+  .opcao.certa .letra{background:var(--brand2);color:#04150f;border-color:var(--brand2)}
+  .opcao.errada{border-color:var(--bad);background:rgba(255,107,107,.08)}
+  .opcao.errada .letra{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .opcao:disabled{cursor:default}
+  .explica{margin-top:16px;padding:14px 16px;background:var(--bg);border-left:3px solid var(--brand);border-radius:8px;font-size:14px;color:var(--muted)}
+  .explica b{color:var(--ink)}
+  .q-next{margin-top:18px}
+
+  /* ---------- RESULTADO ---------- */
+  .resultado{text-align:center;padding:14px 0}
+  .resultado .emoji{font-size:54px}
+  .resultado h2{font-family:'Space Grotesk',sans-serif;font-size:28px;margin:8px 0}
+  .resultado .placar{color:var(--muted);font-size:16px}
+  .xp-ganho{display:inline-block;margin-top:18px;background:rgba(255,183,77,.12);border:1px solid rgba(255,183,77,.4);color:var(--gold);font-weight:700;font-size:20px;padding:12px 24px;border-radius:30px;font-family:'Space Grotesk',sans-serif}
+  .lvlup{margin-top:14px;color:var(--brand);font-weight:700;font-size:16px;animation:pop .5s ease}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+
+  /* ---------- RANKING ---------- */
+  .rank-list{display:flex;flex-direction:column;gap:9px}
+  .rank-row{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:14px;background:var(--bg);border:1px solid var(--line);padding:13px 16px;border-radius:12px}
+  .rank-row.me{border-color:var(--brand);background:rgba(124,92,255,.08)}
+  .rank-pos{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;text-align:center;color:var(--muted)}
+  .rank-row.top1 .rank-pos{color:var(--gold)}
+  .rank-row.top2 .rank-pos{color:#cdd8e0}
+  .rank-row.top3 .rank-pos{color:#cd7f4d}
+  .rank-name{font-weight:600}
+  .rank-name .tag{font-size:11px;color:var(--brand);margin-left:6px}
+  .rank-meta{font-size:12px;color:var(--muted)}
+  .rank-xp{font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+
+  .center-msg{text-align:center;color:var(--muted);padding:40px 0;font-size:15px}
+  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;margin:30px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--brand);color:var(--ink);padding:13px 22px;border-radius:12px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:50;animation:pop .3s ease}
+
+  @media(max-width:480px){
+    .auth-hero h1{font-size:34px}
+    .q-text{font-size:18px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TELA DE LOGIN ============ -->
+<div id="tela-auth">
+  <div class="wrap">
+    <div class="auth-hero">
+      <h1>Estuda<span class="g">Mais</span></h1>
+      <p>Escolha um tema. A IA cria o quiz. Você ganha XP, sobe de nível e disputa o ranking.</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button id="tabEntrar" class="on" onclick="trocarTab('entrar')">Entrar</button>
+        <button id="tabCriar" onclick="trocarTab('criar')">Criar conta</button>
+      </div>
+      <div class="field" id="campoApelido" style="display:none">
+        <label>Apelido (aparece no ranking)</label>
+        <input type="text" id="inApelido" maxlength="20" placeholder="ex: antonio_dev">
+      </div>
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="inEmail" placeholder="voce@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="inSenha" placeholder="mínimo 6 caracteres" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="btnAuth" onclick="enviarAuth()">Entrar</button>
+      <div class="auth-msg" id="authMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP (logado) ============ -->
+<div id="tela-app" class="hidden">
+  <header class="top">
+    <div class="logo"><span class="spark">◆</span> Estuda<span style="color:var(--brand)">Mais</span></div>
+    <div class="user-chip">
+      <span class="lvl" id="chipNivel">Nv 1</span>
+      <span class="xp" id="chipXp">0 XP</span>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav class="tabs">
+      <button id="navJogar" class="on" onclick="irPara('jogar')">▶ Jogar</button>
+      <button id="navPerfil" onclick="irPara('perfil')">★ Meu progresso</button>
+      <button id="navRanking" onclick="irPara('ranking')">🏆 Ranking</button>
+    </nav>
+
+    <!-- VIEW: JOGAR -->
+    <section id="view-jogar">
+      <div class="card" id="cardInicio">
+        <h2 class="sec">Começar um quiz</h2>
+        <p class="sec-sub">Digite qualquer tema — história, programação, biologia, o que quiser.</p>
+        <div class="tema-row">
+          <input type="text" id="inTema" placeholder="ex: Revolução Francesa" maxlength="60">
+          <button class="btn-primary" style="width:auto;padding:13px 24px" id="btnGerar" onclick="gerarQuiz()">Gerar quiz</button>
+        </div>
+        <div class="sugestoes">
+          <button class="chip" onclick="usarSugestao('JavaScript básico')">JavaScript básico</button>
+          <button class="chip" onclick="usarSugestao('História do Brasil')">História do Brasil</button>
+          <button class="chip" onclick="usarSugestao('Sistema Solar')">Sistema Solar</button>
+          <button class="chip" onclick="usarSugestao('Cibercultura')">Cibercultura</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="cardLoading">
+        <div class="spinner"></div>
+        <p class="center-msg" style="padding:0">A IA está criando seu quiz sobre <b id="loadTema"></b>...</p>
+      </div>
+
+      <div class="card hidden" id="cardQuiz">
+        <div class="q-head">
+          <span id="qContador">Pergunta 1 de 5</span>
+          <span id="qTema"></span>
+        </div>
+        <div class="q-prog"><div class="q-prog-fill" id="qProgFill" style="width:0"></div></div>
+        <div class="q-text" id="qText"></div>
+        <div class="opcoes" id="qOpcoes"></div>
+        <div class="explica hidden" id="qExplica"></div>
+        <button class="btn-primary q-next hidden" id="btnProxima" onclick="proximaPergunta()">Próxima</button>
+      </div>
+
+      <div class="card hidden" id="cardResultado">
+        <div class="resultado">
+          <div class="emoji" id="resEmoji">🎉</div>
+          <h2 id="resTitulo">Mandou bem!</h2>
+          <p class="placar" id="resPlacar">Você acertou 4 de 5</p>
+          <div class="xp-ganho" id="resXp">+40 XP</div>
+          <div class="lvlup hidden" id="resLvlup">⬆ Subiu para o nível 2!</div>
+          <div style="margin-top:26px">
+            <button class="btn-primary" style="width:auto;padding:13px 30px" onclick="irPara('jogar')">Jogar de novo</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: PERFIL -->
+    <section id="view-perfil" class="hidden">
+      <div class="card">
+        <h2 class="sec">Meu progresso</h2>
+        <p class="sec-sub" id="perfilApelido">—</p>
+        <div class="stat-grid">
+          <div class="stat lvl"><div class="v" id="stNivel">1</div><div class="l">Nível</div></div>
+          <div class="stat xp"><div class="v" id="stXp">0</div><div class="l">XP total</div></div>
+          <div class="stat acc"><div class="v" id="stAcc">0%</div><div class="l">Acerto</div></div>
+        </div>
+        <div class="lvl-bar-wrap">
+          <div class="lvl-bar-top">
+            <span id="lblNivelAtual">Nível 1</span>
+            <span id="lblFaltaXp">faltam 100 XP</span>
+          </div>
+          <div class="lvl-bar"><div class="lvl-bar-fill" id="perfilBar" style="width:0"></div></div>
+        </div>
+        <div class="stat-grid" style="margin-top:20px;margin-bottom:0">
+          <div class="stat"><div class="v" id="stQuiz">0</div><div class="l">Quizzes</div></div>
+          <div class="stat"><div class="v" id="stAcertos" style="color:var(--brand2)">0</div><div class="l">Acertos</div></div>
+          <div class="stat"><div class="v" id="stErros" style="color:var(--bad)">0</div><div class="l">Erros</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: RANKING -->
+    <section id="view-ranking" class="hidden">
+      <div class="card">
+        <h2 class="sec">Ranking global 🏆</h2>
+        <p class="sec-sub">Os melhores estudantes da plataforma, por XP acumulado.</p>
+        <div id="rankConteudo"><div class="spinner"></div></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+// ============ ESTADO ============
+let sb, usuario=null, perfil=null;
+let modoAuth="entrar";
+let quiz=null, idxPergunta=0, acertosQuiz=0, respondeu=false;
+
+// ============ INICIALIZAÇÃO ============
+function init(){
+  if(typeof SUPABASE_URL==="undefined" || SUPABASE_URL.includes("SEU-PROJETO")){
+    document.body.innerHTML='<div style="max-width:560px;margin:80px auto;padding:30px;font-family:sans-serif;color:#eef2f7;background:#1c2230;border-radius:16px;text-align:center"><h2>⚙️ Configuração pendente</h2><p style="color:#8b97a8;margin-top:12px">Abra o arquivo <code>config.js</code> e cole a URL e a anon key do seu projeto Supabase. As instruções estão no <b>GUIA-DEPLOY.md</b>.</p></div>';
+    return;
+  }
+  sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  sb.auth.getSession().then(({data})=>{
+    if(data.session){ usuario=data.session.user; aoLogar(); }
+  });
+}
+
+// ============ AUTENTICAÇÃO ============
+function trocarTab(modo){
+  modoAuth=modo;
+  document.getElementById("tabEntrar").classList.toggle("on",modo==="entrar");
+  document.getElementById("tabCriar").classList.toggle("on",modo==="criar");
+  document.getElementById("campoApelido").style.display=modo==="criar"?"block":"none";
+  document.getElementById("btnAuth").textContent=modo==="criar"?"Criar conta":"Entrar";
+  document.getElementById("authMsg").textContent="";
+}
+
+async function enviarAuth(){
+  const email=document.getElementById("inEmail").value.trim();
+  const senha=document.getElementById("inSenha").value;
+  const apelido=document.getElementById("inApelido").value.trim();
+  const msg=document.getElementById("authMsg");
+  const btn=document.getElementById("btnAuth");
+  msg.textContent=""; msg.className="auth-msg";
+
+  if(!email||!senha){ msg.textContent="Preencha e-mail e senha."; msg.classList.add("err"); return; }
+  if(modoAuth==="criar"&&!apelido){ msg.textContent="Escolha um apelido."; msg.classList.add("err"); return; }
+  if(senha.length<6){ msg.textContent="A senha precisa de no mínimo 6 caracteres."; msg.classList.add("err"); return; }
+
+  btn.disabled=true; btn.textContent="Aguarde...";
+
+  try{
+    if(modoAuth==="criar"){
+      const {data,error}=await sb.auth.signUp({email,password:senha});
+      if(error) throw error;
+      usuario=data.user;
+      // cria o perfil
+      const {error:e2}=await sb.from("profiles").insert({id:usuario.id,apelido});
+      if(e2) throw e2;
+      msg.textContent="Conta criada! Entrando..."; msg.classList.add("ok");
+      setTimeout(aoLogar,600);
+    }else{
+      const {data,error}=await sb.auth.signInWithPassword({email,password:senha});
+      if(error) throw error;
+      usuario=data.user;
+      aoLogar();
+    }
+  }catch(e){
+    msg.textContent=traduzErro(e.message); msg.classList.add("err");
+    btn.disabled=false; btn.textContent=modoAuth==="criar"?"Criar conta":"Entrar";
+  }
+}
+
+function traduzErro(m){
+  if(/already registered|already exists/i.test(m)) return "Esse e-mail já tem conta. Tente entrar.";
+  if(/Invalid login/i.test(m)) return "E-mail ou senha incorretos.";
+  if(/Email not confirmed/i.test(m)) return "Confirme seu e-mail antes de entrar (ou desative a confirmação no Supabase).";
+  return m;
+}
+
+async function aoLogar(){
+  const {data,error}=await sb.from("profiles").select("*").eq("id",usuario.id).single();
+  if(error||!data){
+    // perfil não existe ainda (caso raro): cria com apelido do email
+    const apelido=(usuario.email||"jogador").split("@")[0];
+    await sb.from("profiles").insert({id:usuario.id,apelido});
+    const r=await sb.from("profiles").select("*").eq("id",usuario.id).single();
+    perfil=r.data;
+  }else{
+    perfil=data;
+  }
+  document.getElementById("tela-auth").classList.add("hidden");
+  document.getElementById("tela-app").classList.remove("hidden");
+  atualizarChip();
+  irPara("jogar");
+}
+
+async function sair(){
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// ============ NAVEGAÇÃO ============
+function irPara(view){
+  ["jogar","perfil","ranking"].forEach(v=>{
+    document.getElementById("view-"+v).classList.toggle("hidden",v!==view);
+    document.getElementById("nav"+v.charAt(0).toUpperCase()+v.slice(1)).classList.toggle("on",v===view);
+  });
+  if(view==="jogar") resetJogar();
+  if(view==="perfil") renderPerfil();
+  if(view==="ranking") carregarRanking();
+}
+
+function resetJogar(){
+  document.getElementById("cardInicio").classList.remove("hidden");
+  document.getElementById("cardLoading").classList.add("hidden");
+  document.getElementById("cardQuiz").classList.add("hidden");
+  document.getElementById("cardResultado").classList.add("hidden");
+}
+
+// ============ GERAR QUIZ (chama Edge Function) ============
+function usarSugestao(t){ document.getElementById("inTema").value=t; gerarQuiz(); }
+
+async function gerarQuiz(){
+  const tema=document.getElementById("inTema").value.trim();
+  if(!tema){ toast("Digite um tema primeiro."); return; }
+
+  document.getElementById("cardInicio").classList.add("hidden");
+  document.getElementById("cardLoading").classList.remove("hidden");
+  document.getElementById("loadTema").textContent=tema;
+
+  try{
+    const {data,error}=await sb.functions.invoke("gerar-quiz",{body:{tema,quantidade:5}});
+    if(error) throw error;
+    if(data.erro) throw new Error(data.erro);
+    quiz={tema,perguntas:data.perguntas};
+    idxPergunta=0; acertosQuiz=0;
+    document.getElementById("cardLoading").classList.add("hidden");
+    document.getElementById("cardQuiz").classList.remove("hidden");
+    renderPergunta();
+  }catch(e){
+    document.getElementById("cardLoading").classList.add("hidden");
+    document.getElementById("cardInicio").classList.remove("hidden");
+    toast(e.message||"Erro ao gerar o quiz. Tente de novo.");
+  }
+}
+
+// ============ RENDER PERGUNTA ============
+function renderPergunta(){
+  respondeu=false;
+  const p=quiz.perguntas[idxPergunta];
+  const total=quiz.perguntas.length;
+  document.getElementById("qContador").textContent=`Pergunta ${idxPergunta+1} de ${total}`;
+  document.getElementById("qTema").textContent=quiz.tema;
+  document.getElementById("qProgFill").style.width=((idxPergunta)/total*100)+"%";
+  document.getElementById("qText").textContent=p.pergunta;
+  document.getElementById("qExplica").classList.add("hidden");
+  document.getElementById("btnProxima").classList.add("hidden");
+
+  const letras=["A","B","C","D"];
+  const cont=document.getElementById("qOpcoes");
+  cont.innerHTML=p.opcoes.map((op,i)=>
+    `<button class="opcao" data-i="${i}" onclick="responder(${i})"><span class="letra">${letras[i]}</span><span>${op}</span></button>`
+  ).join("");
+}
+
+function responder(i){
+  if(respondeu) return;
+  respondeu=true;
+  const p=quiz.perguntas[idxPergunta];
+  const botoes=document.querySelectorAll("#qOpcoes .opcao");
+  botoes.forEach(b=>{
+    b.disabled=true;
+    const bi=Number(b.dataset.i);
+    if(bi===p.correta) b.classList.add("certa");
+    else if(bi===i) b.classList.add("errada");
+  });
+  if(i===p.correta) acertosQuiz++;
+
+  const ex=document.getElementById("qExplica");
+  ex.innerHTML=(i===p.correta?"<b>Correto!</b> ":"<b>Quase!</b> ")+(p.explicacao||"");
+  ex.classList.remove("hidden");
+
+  const ultima=idxPergunta===quiz.perguntas.length-1;
+  const btn=document.getElementById("btnProxima");
+  btn.textContent=ultima?"Ver resultado":"Próxima";
+  btn.classList.remove("hidden");
+}
+
+function proximaPergunta(){
+  if(idxPergunta<quiz.perguntas.length-1){
+    idxPergunta++;
+    renderPergunta();
+  }else{
+    finalizarQuiz();
+  }
+}
+
+// ============ FINALIZAR + SALVAR NO BANCO ============
+async function finalizarQuiz(){
+  const total=quiz.perguntas.length;
+  const xpGanho=acertosQuiz*10;
+  const nivelAntes=perfil.nivel;
+
+  document.getElementById("cardQuiz").classList.add("hidden");
+  document.getElementById("cardResultado").classList.remove("hidden");
+
+  const pct=acertosQuiz/total;
+  document.getElementById("resEmoji").textContent=pct>=0.8?"🏆":pct>=0.5?"🎉":"💪";
+  document.getElementById("resTitulo").textContent=pct>=0.8?"Excelente!":pct>=0.5?"Mandou bem!":"Continue praticando!";
+  document.getElementById("resPlacar").textContent=`Você acertou ${acertosQuiz} de ${total}`;
+  document.getElementById("resXp").textContent=`+${xpGanho} XP`;
+  document.getElementById("resLvlup").classList.add("hidden");
+
+  // salva no banco via função RPC (atômica)
+  try{
+    const {data,error}=await sb.rpc("registrar_resultado",{
+      p_tema:quiz.tema, p_acertos:acertosQuiz, p_total:total, p_xp_ganho:xpGanho
+    });
+    if(error) throw error;
+    perfil=data;
+    atualizarChip();
+    if(perfil.nivel>nivelAntes){
+      const el=document.getElementById("resLvlup");
+      el.textContent=`⬆ Subiu para o nível ${perfil.nivel}!`;
+      el.classList.remove("hidden");
+    }
+  }catch(e){
+    toast("Quiz concluído, mas não consegui salvar o XP. Verifique a conexão.");
+  }
+}
+
+// ============ CHIP DO TOPO ============
+function atualizarChip(){
+  document.getElementById("chipNivel").textContent="Nv "+perfil.nivel;
+  document.getElementById("chipXp").textContent=perfil.xp+" XP";
+}
+
+// ============ PERFIL ============
+function xpDoNivel(n){ return (n*(n-1)/2)*100; } // XP acumulado p/ chegar no nível n
+function renderPerfil(){
+  document.getElementById("perfilApelido").textContent="@"+perfil.apelido;
+  document.getElementById("stNivel").textContent=perfil.nivel;
+  document.getElementById("stXp").textContent=perfil.xp;
+  document.getElementById("stQuiz").textContent=perfil.quizzes;
+  document.getElementById("stAcertos").textContent=perfil.acertos;
+  document.getElementById("stErros").textContent=perfil.erros;
+  const totalResp=perfil.acertos+perfil.erros;
+  const acc=totalResp>0?Math.round(perfil.acertos/totalResp*100):0;
+  document.getElementById("stAcc").textContent=acc+"%";
+
+  const xpAtualNivel=xpDoNivel(perfil.nivel);
+  const xpProxNivel=xpDoNivel(perfil.nivel+1);
+  const prog=(perfil.xp-xpAtualNivel)/(xpProxNivel-xpAtualNivel)*100;
+  document.getElementById("perfilBar").style.width=Math.max(0,Math.min(100,prog))+"%";
+  document.getElementById("lblNivelAtual").textContent="Nível "+perfil.nivel;
+  document.getElementById("lblFaltaXp").textContent="faltam "+Math.max(0,xpProxNivel-perfil.xp)+" XP";
+}
+
+// ============ RANKING ============
+async function carregarRanking(){
+  const cont=document.getElementById("rankConteudo");
+  cont.innerHTML='<div class="spinner"></div>';
+  try{
+    const {data,error}=await sb.from("ranking").select("*");
+    if(error) throw error;
+    if(!data.length){ cont.innerHTML='<p class="center-msg">Ninguém no ranking ainda. Seja o primeiro!</p>'; return; }
+    cont.innerHTML='<div class="rank-list">'+data.map(r=>{
+      const eu=r.apelido===perfil.apelido;
+      const topClass=r.posicao===1?"top1":r.posicao===2?"top2":r.posicao===3?"top3":"";
+      const medalha=r.posicao===1?"🥇":r.posicao===2?"🥈":r.posicao===3?"🥉":r.posicao;
+      return `<div class="rank-row ${topClass} ${eu?'me':''}">
+        <div class="rank-pos">${medalha}</div>
+        <div><span class="rank-name">@${r.apelido}${eu?'<span class="tag">você</span>':''}</span>
+          <div class="rank-meta">Nível ${r.nivel} · ${r.quizzes} quizzes</div></div>
+        <div class="rank-xp">${r.xp} XP</div>
+      </div>`;
+    }).join("")+'</div>';
+  }catch(e){
+    cont.innerHTML='<p class="center-msg">Erro ao carregar o ranking.</p>';
+  }
+}
+
+// ============ TOAST ============
+let toastTimer;
+function toast(msg){
+  let t=document.getElementById("toast");
+  if(t) t.remove();
+  t=document.createElement("div");
+  t.id="toast"; t.className="toast"; t.textContent=msg;
+  document.body.appendChild(t);
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.remove(),3200);
+}
+
+// Enter no campo de tema e senha
+document.getElementById("inTema").addEventListener("keydown",e=>{if(e.key==="Enter")gerarQuiz();});
+document.getElementById("inSenha").addEventListener("keydown",e=>{if(e.key==="Enter")enviarAuth();});
+
+init();
+</script>
+</body>
+</html>
